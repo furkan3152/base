@@ -162,7 +162,8 @@ pub struct BootnodeP2PArgs {
     #[arg(
         long = "p2p.discovery.interval",
         default_value = "5",
-        env = "BASE_NODE_P2P_DISCOVERY_INTERVAL"
+        env = "BASE_NODE_P2P_DISCOVERY_INTERVAL",
+        value_parser = clap::value_parser!(u64).range(1..)
     )]
     pub discovery_interval: u64,
 
@@ -407,6 +408,13 @@ mod tests {
     fn p2p_args(args: &[&str]) -> BootnodeP2PArgs {
         let args = [&["test"], args].concat();
         TestCommand::parse_from(args).p2p
+    }
+
+    #[test]
+    fn rejects_zero_discovery_interval() {
+        let parse = |value| TestCommand::try_parse_from(["test", "--p2p.discovery.interval", value]);
+        assert!(parse("0").is_err());
+        assert!(parse("1").is_ok());
     }
 
     #[test]
